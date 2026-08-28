@@ -208,6 +208,80 @@ test('writeReportFiles writes JSON and HTML outputs', async () => {
   assert.equal(json.insights.at_a_glance.quick_wins, 'Add more repo memory.')
 })
 
+test('combined reports identify Claude and Codex sources', async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'codex-session-insights-sources-'))
+  const report = buildReport([makeSummary()], {
+    source: 'all',
+    codexHome: path.join(os.homedir(), '.codex'),
+    sourceRoots: [
+      { name: 'Claude', path: path.join(os.homedir(), '.claude') },
+      { name: 'Codex', path: path.join(os.homedir(), '.codex') },
+    ],
+    insightsOverride: createSampleReport().insights,
+  })
+  report.analysisUsage = {
+    calls: 1,
+    inputTokens: 100,
+    cachedInputTokens: 0,
+    outputTokens: 10,
+    totalTokens: 110,
+    byModel: [],
+    byStage: [],
+  }
+
+  const { htmlPath } = await writeReportFiles(report, { outDir: tempDir })
+  const html = await fs.readFile(htmlPath, 'utf8')
+
+  assert.equal(report.metadata.source, 'all')
+  assert.deepEqual(report.metadata.sourceRoots, [
+    { name: 'Claude', path: path.join(os.homedir(), '.claude') },
+    { name: 'Codex', path: path.join(os.homedir(), '.codex') },
+  ])
+  assert.match(renderTerminalSummary(report), /Claude \+ Codex Session Insights/)
+  assert.match(html, /<title>Claude \+ Codex Session Insights<\/title>/)
+  assert.match(html, /Claude \+ Codex Usage Report/)
+  assert.match(html, /~\/\.claude \+ ~\/\.codex/)
+})
+
+test('single-source reports identify their own source', async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'codex-session-insights-single-source-'))
+  const insights = createSampleReport().insights
+  const claude = buildReport([makeSummary()], {
+    source: 'claude',
+    sourceRoots: [{ name: 'Claude', path: path.join(os.homedir(), '.claude') }],
+    insightsOverride: insights,
+  })
+  const codex = buildReport([makeSummary()], {
+    codexHome: path.join(os.homedir(), '.codex'),
+    insightsOverride: insights,
+  })
+  for (const report of [claude, codex]) {
+    report.analysisUsage = {
+      calls: 1,
+      inputTokens: 100,
+      cachedInputTokens: 0,
+      outputTokens: 10,
+      totalTokens: 110,
+      byModel: [],
+      byStage: [],
+    }
+  }
+
+  const claudeFiles = await writeReportFiles(claude, { outDir: path.join(tempDir, 'claude') })
+  const codexFiles = await writeReportFiles(codex, { outDir: path.join(tempDir, 'codex') })
+  const claudeHtml = await fs.readFile(claudeFiles.htmlPath, 'utf8')
+  const codexHtml = await fs.readFile(codexFiles.htmlPath, 'utf8')
+
+  assert.equal(claude.metadata.source, 'claude')
+  assert.deepEqual(claude.metadata.sourceRoots, [{ name: 'Claude', path: path.join(os.homedir(), '.claude') }])
+  assert.match(claudeHtml, /<title>Claude Session Insights<\/title>/)
+  assert.match(claudeHtml, /~\/\.claude/)
+  assert.equal(codex.metadata.source, 'codex')
+  assert.deepEqual(codex.metadata.sourceRoots, [{ name: 'Codex', path: path.join(os.homedir(), '.codex') }])
+  assert.match(codexHtml, /<title>Codex Insights<\/title>/)
+  assert.match(codexHtml, /~\/\.codex/)
+})
+
 test('sample report fixture generates stable HTML output', async () => {
   const firstDir = await fs.mkdtemp(path.join(os.tmpdir(), 'codex-session-insights-sample-a-'))
   const secondDir = await fs.mkdtemp(path.join(os.tmpdir(), 'codex-session-insights-sample-b-'))

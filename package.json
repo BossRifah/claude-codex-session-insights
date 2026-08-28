@@ -1,10 +1,10 @@
 {
-  "name": "codex-session-insights",
+  "name": "claude-codex-session-isights",
   "version": "0.2.3",
-  "description": "Generate a report analyzing your Codex sessions.",
+  "description": "Generate a report analyzing Codex, Claude Code, or combined sessions.",
   "type": "module",
   "bin": {
-    "codex-session-insights": "bin/codex-insights.js"
+    "claude-codex-session-isights": "bin/codex-insights.js"
   },
   "files": [
     "bin",
@@ -28,7 +28,7 @@
     "report:lite": "node ./bin/codex-insights.js --preset lite --yes",
     "generate:test-report": "node ./scripts/generate-test-report.mjs",
     "test": "node --test",
-    "check": "node --check ./bin/codex-insights.js && node --check ./lib/cli.js && node --check ./lib/codex-data.js && node --check ./lib/report.js && node --check ./lib/llm-insights.js && node --check ./lib/model-provider.js && npm run typecheck",
+    "check": "node --check ./bin/codex-insights.js && node --check ./lib/cli.js && node --check ./lib/codex-data.js && node --check ./lib/claude-data.js && node --check ./lib/report.js && node --check ./lib/llm-insights.js && node --check ./lib/model-provider.js && npm run typecheck",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [

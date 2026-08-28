@@ -1,8 +1,8 @@
-# codex-session-insights
+# claude-codex-session-isights
 
-Generate a report analyzing your Codex sessions.
+Generate a report analyzing your Codex, Claude Code, or combined sessions.
 
-`codex-session-insights` reads your local Codex history, extracts recurring patterns from your sessions, and renders a narrative report as both HTML and JSON.
+`claude-codex-session-isights` reads local session history, extracts recurring patterns, and renders a narrative report as both HTML and JSON. The analysis can run through your logged-in Codex CLI session.
 
 ![codex-session-insights screenshot](https://raw.githubusercontent.com/cosformula/codex-session-insights/main/assets/screenshot-1.png)
 
@@ -11,12 +11,12 @@ Generate a report analyzing your Codex sessions.
 Run it directly:
 
 ```bash
-npx codex-session-insights
+npx claude-codex-session-isights
 ```
 
 The default flow is:
 
-1. Read your local Codex thread index
+1. Read the selected local session history
 2. Estimate likely analysis token usage
 3. Let you confirm the plan in an interactive terminal
 4. Generate `report.html` and `report.json`
@@ -25,13 +25,13 @@ The default flow is:
 If you only want the estimate first:
 
 ```bash
-npx codex-session-insights --estimate-only
+npx claude-codex-session-isights --estimate-only
 ```
 
 If you already know what you want and do not want the confirmation flow:
 
 ```bash
-npx codex-session-insights --yes
+npx claude-codex-session-isights --yes
 ```
 
 ## What You Get
@@ -45,7 +45,7 @@ The HTML report includes these sections:
 
 - `At a Glance`
 - `What You Work On`
-- `How You Use Codex`
+- `How You Use Your Coding Assistants`
 - `Impressive Things You Did`
 - `Where Things Go Wrong`
 - `Features to Try`
@@ -57,56 +57,68 @@ The HTML report includes these sections:
 Default run:
 
 ```bash
-npx codex-session-insights
+npx claude-codex-session-isights
 ```
 
 Lite local run for prompt and layout testing:
 
 ```bash
-npx codex-session-insights --preset lite
+npx claude-codex-session-isights --preset lite
 ```
 
 Estimate first, then decide:
 
 ```bash
-npx codex-session-insights --days 7 --limit 20 --facet-limit 8 --estimate-only
+npx claude-codex-session-isights --days 7 --limit 20 --facet-limit 8 --estimate-only
 ```
 
 Use a custom output directory:
 
 ```bash
-npx codex-session-insights --out-dir ./insights-output
+npx claude-codex-session-isights --out-dir ./insights-output
+```
+
+Analyze Claude Code sessions only:
+
+```bash
+npx claude-codex-session-isights --source claude --days 0 --yes
+```
+
+Analyze both Claude Code and Codex sessions:
+
+```bash
+npx claude-codex-session-isights --source all --days 0 --yes
 ```
 
 Emit JSON to stdout instead of a terminal summary:
 
 ```bash
-npx codex-session-insights --stdout-json
+npx claude-codex-session-isights --stdout-json
 ```
 
 Include archived threads:
 
 ```bash
-npx codex-session-insights --include-archived
+npx claude-codex-session-isights --include-archived
 ```
 
 Include sub-agent threads as well as main threads:
 
 ```bash
-npx codex-session-insights --include-subagents
+npx claude-codex-session-isights --include-subagents
 ```
 
 Choose the report language explicitly:
 
 ```bash
-npx codex-session-insights --lang zh-CN
-npx codex-session-insights --lang en
+npx claude-codex-session-isights --lang zh-CN
+npx claude-codex-session-isights --lang en
 ```
 
 Use the OpenAI API instead of your local Codex CLI login:
 
 ```bash
-npx codex-session-insights --provider openai --api-key $OPENAI_API_KEY
+npx claude-codex-session-isights --provider openai --api-key $OPENAI_API_KEY
 ```
 
 ## Defaults
@@ -136,8 +148,9 @@ Important behavior defaults:
 
 ## What It Reads
 
-- `~/.codex/state_*.sqlite` for the thread index
-- `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl` for rollout events
+- With `--source codex` (the default): `~/.codex/state_*.sqlite` and Codex rollout events
+- With `--source claude`: Claude Code transcripts in `~/.claude/projects/**/*.jsonl`
+- With `--source all`: both local sources
 
 ## Requirements
 
@@ -153,7 +166,7 @@ Supported platform status:
 
 ## Privacy
 
-The tool reads local Codex data from your machine.
+The tool reads local Codex and/or Claude Code data from your machine, depending on `--source`.
 
 - With `provider=codex-cli`, analysis is performed through your local Codex CLI session
 - With `provider=openai`, prompts are sent through the OpenAI Responses API
@@ -163,7 +176,7 @@ Review `report.html` and `report.json` before sharing them.
 
 ## Limitations
 
-- Rollout event schemas may drift across Codex versions
+- Local Codex and Claude Code transcript schemas may drift across versions
 - Token estimates are conservative, not billing-accurate
 - The tool is designed around Codex local storage layout and is not a generic agent log analyzer
 - Windows support is not yet verified
@@ -173,7 +186,7 @@ Review `report.html` and `report.json` before sharing them.
 If you want to override the default model split manually:
 
 ```bash
-npx codex-session-insights \
+npx claude-codex-session-isights \
   --facet-model gpt-5.4-mini \
   --fast-section-model gpt-5.4-mini \
   --insight-model gpt-5.4 \
